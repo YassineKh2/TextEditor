@@ -14,7 +14,8 @@
     "@tauri-apps/api": "^1.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.23.1"
+    "react-router-dom": "^6.23.1",
+    "use-keyboard-shortcut": "^1.1.6"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1.5.14",

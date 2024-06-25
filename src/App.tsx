@@ -1,20 +1,37 @@
 import './App.css';
-import {useEffect, useState} from "react";
+import {useEffect, useState ,ChangeEvent} from "react";
 import {invoke} from "@tauri-apps/api/tauri";
 import {open, save} from "@tauri-apps/api/dialog";
 import {readTextFile} from "@tauri-apps/api/fs";
 import {appWindow, WebviewWindow} from "@tauri-apps/api/window";
 import {Route, Routes} from "react-router-dom";
+import useKeyboardShortcut from 'use-keyboard-shortcut'
+
 
 function App() {
     const [note, SetNote] = useState('');
     const [CharacterCount, SetCharacterCount] = useState(0);
     const [fontSize, setFontSize] = useState(16);
 
-    const handleChange = (e) => {
+    const handleChange = (e:ChangeEvent<HTMLTextAreaElement>) => {
         SetNote(e.target.value);
         SetCharacterCount(e.target.value.length);
     };
+
+    const { flushHeldKeys } = useKeyboardShortcut(
+        ["Control","s"],
+        () => {
+            console.log('save');
+            saveMessage().then();
+            flushHeldKeys();
+        },
+        {
+            overrideSystem: false,
+            ignoreInputFields: false,
+            repeatOnHold: false
+        }
+    );
+
 
 
     const saveMessage = async () => {
@@ -41,19 +58,20 @@ function App() {
 
     let cntr = false;
     let font = fontSize;
-    const handleKeyDown = (e) => {
+
+    const handleKeyDown = (e: { key: string; }) => {
         if (e.key === "Control") {
             cntr = true
         }
     };
 
-    const handleKeyUp = (e) => {
+    const handleKeyUp = (e: { key: string; }) => {
         if (e.key === "Control") {
             cntr = false
         }
     };
 
-    const handleScroll = (e) => {
+    const handleScroll = (e: { deltaY: number; }) => {
         if (cntr && e.deltaY < 0) {
             font = font + 15;
         }
@@ -88,7 +106,7 @@ function App() {
     }, []);
 
     const openFontWindow = async () => {
-        const fontview = new WebviewWindow('my-label', {
+        new WebviewWindow('my-label', {
             title: 'My Webview',
             url: ' http://localhost:5173/fontview',
         });
