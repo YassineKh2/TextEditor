@@ -6,12 +6,21 @@ import {readTextFile} from "@tauri-apps/api/fs";
 import {appWindow, WebviewWindow} from "@tauri-apps/api/window";
 import {Route, Routes} from "react-router-dom";
 import useKeyboardShortcut from 'use-keyboard-shortcut'
+import FontSelector from "./Components/FontSelector.tsx";
+
+
 
 
 function App() {
+
+
     const [note, SetNote] = useState('');
     const [CharacterCount, SetCharacterCount] = useState(0);
+
+    // Font States
     const [fontSize, setFontSize] = useState(16);
+    const [chosenFont, setChosenFont] = useState("font-PlaywriteITModerna")
+
 
     const handleChange = (e:ChangeEvent<HTMLTextAreaElement>) => {
         SetNote(e.target.value);
@@ -55,36 +64,47 @@ function App() {
         }
     }
 
+    // Handle Font Size
+    useEffect(() => {
+        let cntr = false;
+        let font = fontSize;
 
-    let cntr = false;
-    let font = fontSize;
+        const handleKeyDown = (e: { key: string; }) => {
+            if (e.key === "Control") {
+                cntr = true
+            }
+        };
 
-    const handleKeyDown = (e: { key: string; }) => {
-        if (e.key === "Control") {
-            cntr = true
+        const handleKeyUp = (e: { key: string; }) => {
+            if (e.key === "Control") {
+                cntr = false
+            }
+        };
+
+        const handleScroll = (e: { deltaY: number; }) => {
+            if (cntr && e.deltaY < 0) {
+                console.log('scroll up');
+                font = font + 15;
+            }
+            if (cntr && e.deltaY > 0) {
+                console.log('scroll down');
+                font = font - 15;
+            }
+            setFontSize(font);
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        window.addEventListener("keyup", handleKeyUp);
+        window.addEventListener("wheel", handleScroll);
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener("keyup", handleKeyUp);
+            window.removeEventListener("wheel", handleScroll);
         }
-    };
+    }, []);
 
-    const handleKeyUp = (e: { key: string; }) => {
-        if (e.key === "Control") {
-            cntr = false
-        }
-    };
-
-    const handleScroll = (e: { deltaY: number; }) => {
-        if (cntr && e.deltaY < 0) {
-            font = font + 15;
-        }
-        if (cntr && e.deltaY > 0) {
-            font = font - 15;
-        }
-        setFontSize(font);
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-    window.addEventListener("wheel", handleScroll);
-
+    // Handle Menu Events
     useEffect(() => {
         appWindow.listen('open_file', () => {
             openMessage().then();
@@ -105,12 +125,17 @@ function App() {
 
     }, []);
 
+    // Open Font Window
     const openFontWindow = async () => {
         new WebviewWindow('my-label', {
             title: 'My Webview',
             url: ' http://localhost:5173/fontview',
         });
     }
+
+    useEffect(() => {
+        console.log(chosenFont);
+    }, [chosenFont]);
 
 
     return (
@@ -121,7 +146,7 @@ function App() {
                     <>
                         <div className="flex flex-col">
             <textarea
-                className="w-full h-dvh resize-none outline-none"
+                className={"w-full h-dvh resize-none outline-none "+chosenFont}
                 placeholder="Start typing your note..."
                 value={note}
                 style={{fontSize: fontSize}}
@@ -140,7 +165,9 @@ function App() {
                 path="fontview"
                 element={
                     <>
-                        <label>fontview</label>
+                        <FontSelector defaultValue={chosenFont} onChange={(e) => {
+                            setChosenFont(e.target.value)
+                        }}/>
                     </>
                 }
             />

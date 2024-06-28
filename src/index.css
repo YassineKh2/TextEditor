@@ -5,3 +5,15 @@
 body {
   overflow: hidden;
 }
+@font-face {
+  font-family: "PlaywriteITModerna";
+  src: url(public/fonts/PlaywriteITModerna-VariableFont_wght.ttf);
+}
+@font-face {
+  font-family: "RobotoBlack";
+  src: url(public/fonts/Roboto-Black.ttf);
+}
+@font-face {
+  font-family: "MontserratItalic";
+  src: url(public/fonts/Montserrat-Italic-VariableFont_wght.ttf);
+}
